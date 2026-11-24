@@ -52,6 +52,10 @@ type View struct {
 	// Fault is set when the server is in the ERROR status or an operation has failed.
 	Fault *Fault `json:"fault"`
 
+	// UserData is the Base64-encoded user data, empty for a server without one. Get
+	// reports it; ListDetail does not.
+	UserData string `json:"user_data"`
+
 	UserID    string    `json:"user_id"`
 	ProjectID string    `json:"tenant_id"`
 	Created   time.Time `json:"created"`

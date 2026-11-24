@@ -53,6 +53,7 @@ const (
 		"os-extended-volumes:volumes_attached": [{"id": "volume-1", "delete_on_termination": true}],
 		"preemptible_forbidden_until": "2026-11-20T10:00:00+00:00",
 		"fault": {"code": 500, "message": "No valid host was found.", "created": "2026-11-16T10:00:00Z"},
+		"user_data": "I2Nsb3VkLWNvbmZpZw==",
 		"user_id": "user-1",
 		"tenant_id": "project-1",
 		"created": "2026-11-16T09:00:00Z",
@@ -202,13 +203,14 @@ func TestServer_Get(t *testing.T) {
 		require.Equal(t, []AttachedVolume{{ID: testVolumeID, DeleteOnTermination: true}}, view.VolumesAttached)
 		require.Equal(t, ForbiddenUntil{Reported: true, Time: "2026-11-20T10:00:00+00:00"}, view.PreemptibleForbiddenUntil)
 		require.Equal(t, &Fault{Code: 500, Message: "No valid host was found."}, view.Fault)
+		require.Equal(t, "I2Nsb3VkLWNvbmZpZw==", view.UserData)
 		require.Equal(t, 2026, view.Created.Year())
 	})
 
 	t.Run("DecodesAVolumeBackedServer", func(t *testing.T) {
 		httpClient := answer(http.StatusOK, `{"server": {
 			"id": "`+testServerID+`", "status": "ACTIVE", "image": "", "config_drive": "",
-			"preemptible_forbidden_until": null, "fault": null, "server_groups": [], "tags": []
+			"preemptible_forbidden_until": null, "fault": null, "server_groups": [], "tags": [], "user_data": null
 		}}`)
 
 		view, _, err := Get(t.Context(), testhttp.NewSDKClient(httpClient), testServerID)
@@ -219,6 +221,7 @@ func TestServer_Get(t *testing.T) {
 			"null means that the pool sets a period that does not apply yet")
 		require.Nil(t, view.Fault)
 		require.Empty(t, view.ServerGroups)
+		require.Empty(t, view.UserData, "null means that the server has no user data")
 	})
 
 	t.Run("DecodesAPoolWithoutAForbidPeriod", func(t *testing.T) {
